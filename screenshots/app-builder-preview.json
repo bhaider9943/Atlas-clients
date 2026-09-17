@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Client Atlas",
+      "hasCanvas": true,
+      "bodyTextLen": 1072,
+      "bodyTextHash": "21e44327c02995b93a8f4bf9283ec6fe4dbbddef51feb0b80b1abb8f4fd626a7",
+      "bodyTextPrefix": "Client Atlas Hover any dot to read the count 572 clients · 79 co",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Client Atlas",
+      "hasCanvas": true,
+      "bodyTextLen": 69,
+      "bodyTextHash": "c8e7b87b903c5385d68a35dcbfb83a9cf38a68191ba43efca0b37767e8b79ab8",
+      "bodyTextPrefix": "Client Atlas Countries Move across a country to read its client ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
