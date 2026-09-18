@@ -1,17 +1,64 @@
-import { Globe2, List, X } from "lucide-react";
-import { useState } from "react";
+import { Globe2, List, Upload, X } from "lucide-react";
+import type React from "react";
+import { useRef, useState } from "react";
 import { CountryRail } from "@/components/country-rail";
 import { DottedMap } from "@/components/dotted-map";
 import { Button } from "@/components/ui/button";
 import { useClientsStore } from "@/lib/clients-store";
 import { countriesWithClients, sumCounts } from "@/lib/countries";
+import { importClientsCsv, sampleCsv } from "@/lib/csv-import";
 import { formatCount } from "@/lib/utils";
+
+type ImportBanner = { kind: "success" | "error"; message: string } | null;
 
 export function AtlasApp() {
   const counts = useClientsStore((s) => s.counts);
+  const setCounts = useClientsStore((s) => s.setCounts);
   const [open, setOpen] = useState(false);
+  const [banner, setBanner] = useState<ImportBanner>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const total = sumCounts(counts);
   const active = countriesWithClients(counts);
+
+  function handleUploadClick() {
+    fileInputRef.current?.click();
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    file
+      .text()
+      .then((text) => {
+        const result = importClientsCsv(text);
+        if (result.totalRows === 0) {
+          setBanner({ kind: "error", message: "That file has no data rows." });
+          return;
+        }
+        setCounts(result.counts);
+        const unmatchedNote =
+          result.unmatched.length > 0
+            ? ` ${result.unmatched.length} row${result.unmatched.length === 1 ? "" : "s"} not recognized: ${result.unmatched.slice(0, 5).join(", ")}${result.unmatched.length > 5 ? "…" : ""}`
+            : "";
+        setBanner({
+          kind: result.matched > 0 ? "success" : "error",
+          message: `Matched ${result.matched} of ${result.totalRows} rows.${unmatchedNote}`,
+        });
+      })
+      .catch(() => setBanner({ kind: "error", message: "Couldn't read that file." }));
+  }
+
+  function handleDownloadSample() {
+    const blob = new Blob([sampleCsv()], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "client-atlas-sample.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-bg text-fg">
@@ -31,6 +78,19 @@ export function AtlasApp() {
           <p className="hidden font-mono text-xs tabular-nums text-muted md:block">
             {formatCount(total)} clients · {formatCount(active)} countries
           </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".csv,text/csv"
+            className="hidden"
+            onChange={handleFileChange}
+            aria-hidden="true"
+            tabIndex={-1}
+          />
+          <Button variant="outline" size="sm" onClick={handleUploadClick}>
+            <Upload />
+            Upload CSV
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -43,6 +103,41 @@ export function AtlasApp() {
           </Button>
         </div>
       </header>
+
+      {banner && (
+        <div
+          className={`mx-4 mb-2 flex items-start justify-between gap-3 rounded-md px-3 py-2 text-xs sm:mx-6 ${
+            banner.kind === "success"
+              ? "bg-accent/10 text-accent"
+              : "bg-red-500/10 text-red-500"
+          }`}
+        >
+          <span>
+            {banner.message}
+            {banner.kind === "error" && (
+              <>
+                {" "}
+                <button
+                  type="button"
+                  onClick={handleDownloadSample}
+                  className="underline underline-offset-2"
+                >
+                  Download a sample CSV
+                </button>
+                {" "}for the expected format.
+              </>
+            )}
+          </span>
+          <button
+            type="button"
+            aria-label="Dismiss"
+            onClick={() => setBanner(null)}
+            className="shrink-0 opacity-60 hover:opacity-100"
+          >
+            <X className="size-3.5" />
+          </button>
+        </div>
+      )}
 
       <div className="relative flex min-h-0 flex-1 flex-col lg:flex-row">
         <main className="relative min-h-0 flex-1">
