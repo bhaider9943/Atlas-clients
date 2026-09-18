@@ -9,6 +9,7 @@ type ClientsState = {
   setHovered: (id: string | null) => void;
   setSelected: (id: string | null) => void;
   setCount: (id: string, n: number) => void;
+  setCounts: (counts: Record<string, number>) => void;
   reset: () => void;
 };
 
@@ -24,6 +25,7 @@ export const useClientsStore = create<ClientsState>()(
         const next = Math.max(0, Math.min(99999, Math.round(n)));
         set({ counts: { ...get().counts, [id]: next } });
       },
+      setCounts: (counts) => set({ counts }),
       reset: () => set({ counts: { ...DEFAULT_COUNTS } }),
     }),
     {
